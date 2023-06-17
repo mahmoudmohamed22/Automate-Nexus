@@ -1,0 +1,73 @@
+---
+# tasks file for Nexus
+  - name: apt-get update
+    tags: update
+    apt:
+      update_cache: yes
+
+
+  - name: Install latest version of "openjdk-8-jdk" ignoring "install-recommends"
+    apt:
+      name: openjdk-8-jdk
+      state: latest
+      install_recommends: no
+
+
+  - name: Download nexus
+    get_url:
+        url: "https://download.sonatype.com/nexus/3/nexus-3.55.0-01-unix.tar.gz"
+        dest: "/home/ubuntu"  # Specify the destination where you want to save the file
+      
+  - name: Create nexus directory under opt
+    file:
+        path: "/opt/nexus"  # Specify the path of the directory you want to create
+        state: directory
+        mode: '0755'  # Adjust the mode as per your requirements
+
+  - name: Install unzip package
+    apt:
+        name: unzip
+        state: present
+  
+  - name: Install tar package
+    apt:
+        name: tar
+        state: present
+
+  - name: Extract nexus.tgz into /opt/nexus
+    unarchive:
+        src: /home/ubuntu/nexus-3.55.0-01-unix.tar.gz
+        dest: "/opt/nexus"  # Specify the destination directory where Nexus will be installed
+        remote_src: true
+        creates: "/opt/nexus/nexus-3.55.0-01"  # Specify the expected directory path after extraction
+
+
+# Create User
+  - name: Create user
+    user:
+        name: nexus
+        password: "!"
+
+
+  - name: Set ownership and permissions
+    file:
+        path: /opt/nexus
+        state: directory
+        mode: '0755'
+        owner: nexus  # Ensure this user exists on the target host
+        group: nexus  # Ensure this group exists on the target host
+
+
+  - name: Start Nexus service
+    command: /opt/nexus/nexus-3.55.0-01/bin/nexus start
+
+
+  - name: Verify Nexus availability
+    uri:
+        url: http://localhost:8081/  # Update with the appropriate URL for your Nexus server
+        method: GET
+    register: nexus_response
+
+  - name: Display Nexus response
+    debug:
+        var: nexus_response
