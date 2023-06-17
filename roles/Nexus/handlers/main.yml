@@ -1,2 +1,13 @@
 ---
 # handlers file for Nexus
+  - name: Verify Nexus availability
+    uri:
+        url: http://localhost:8081/  # Update with the appropriate URL for your Nexus server
+        method: GET
+    register: nexus_response
+    notify: Display Nexus response
+
+
+  - name: Display Nexus response
+    debug:
+        var: nexus_response

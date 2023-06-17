@@ -60,14 +60,5 @@
 
   - name: Start Nexus service
     command: /opt/nexus/nexus-3.55.0-01/bin/nexus start
+    notify: Verify Nexus availability
 
-
-  - name: Verify Nexus availability
-    uri:
-        url: http://localhost:8081/  # Update with the appropriate URL for your Nexus server
-        method: GET
-    register: nexus_response
-
-  - name: Display Nexus response
-    debug:
-        var: nexus_response
